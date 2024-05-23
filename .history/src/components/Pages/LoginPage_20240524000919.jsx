@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, TextField, Button, Link, Typography, CircularProgress } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,13 +16,19 @@ const LoginPage = () => {
     setLoading(true);
     try {
       await login(email, password);
-      navigate(`/admin/home?user=${encodeURIComponent(user.name)}`);
     } catch (error) {
       setError(error.message);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      const userName = user.name ? encodeURIComponent(user.name) : 'User';
+      navigate(`/admin/home?user=${userName}`);
+    }
+  }, [user, navigate]);
 
   return (
     <Container component="main" maxWidth="xs">
