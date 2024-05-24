@@ -24,19 +24,18 @@ export const AuthProvider = ({ children }) => {
       const { data, error } = await supabase
         .from('users')
         .select('*')
-        .filter('email', 'ilike', email);
+        .ilike('email', email)  // Use ilike for case-insensitive email check
+        .single();
 
       if (error) throw error;
 
-      if (data.length === 0) {
+      if (!data) {
         throw new Error('User not registered');
       }
 
-      const userData = data[0];
-
-      if (bcrypt.compareSync(password, userData.password)) {
+      if (data && bcrypt.compareSync(password, data.password)) {
         const sessionToken = generateSessionToken();
-        const user = { ...userData, sessionToken };
+        const user = { ...data, sessionToken };
         const userDetails = await fetchUserDetails(email);
 
         if (userDetails) {
@@ -52,7 +51,7 @@ export const AuthProvider = ({ children }) => {
           logout();
         }, 3600000); // 1 hour
       } else {
-        throw new Error('Invalid  password');
+        throw new Error('Invalid username or password');
       }
     } catch (error) {
       throw error;
@@ -63,10 +62,11 @@ export const AuthProvider = ({ children }) => {
     const { data, error } = await supabase
       .from('users')
       .select('name')
-      .filter('email', 'ilike', email);
+      .ilike('email', email)  
+      .single();
 
     if (error) throw error;
-    return data[0];
+    return data;
   };
 
   const logout = () => {

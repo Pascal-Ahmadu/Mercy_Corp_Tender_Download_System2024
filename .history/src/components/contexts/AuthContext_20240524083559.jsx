@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
           logout();
         }, 3600000); // 1 hour
       } else {
-        throw new Error('Invalid  password');
+        throw new Error('Invalid username or password');
       }
     } catch (error) {
       throw error;

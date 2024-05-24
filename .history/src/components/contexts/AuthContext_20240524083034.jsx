@@ -20,42 +20,33 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .filter('email', 'ilike', email);
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .ilike('email', email)  // Use ilike for case-insensitive email check
+      .single();
 
-      if (error) throw error;
+    if (error) throw error;
 
-      if (data.length === 0) {
-        throw new Error('User not registered');
+    if (data && bcrypt.compareSync(password, data.password)) {
+      const sessionToken = generateSessionToken();
+      const user = { ...data, sessionToken };
+      const userDetails = await fetchUserDetails(email);
+
+      if (userDetails) {
+        user.name = userDetails.name;
       }
 
-      const userData = data[0];
+      setUser(user);
+      setIsAuthenticated(true);
+      localStorage.setItem('user', JSON.stringify(user));
+      axios.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
 
-      if (bcrypt.compareSync(password, userData.password)) {
-        const sessionToken = generateSessionToken();
-        const user = { ...userData, sessionToken };
-        const userDetails = await fetchUserDetails(email);
-
-        if (userDetails) {
-          user.name = userDetails.name;
-        }
-
-        setUser(user);
-        setIsAuthenticated(true);
-        localStorage.setItem('user', JSON.stringify(user));
-        axios.defaults.headers.common['Authorization'] = `Bearer ${sessionToken}`;
-
-        setTimeout(() => {
-          logout();
-        }, 3600000); // 1 hour
-      } else {
-        throw new Error('Invalid  password');
-      }
-    } catch (error) {
-      throw error;
+      setTimeout(() => {
+        logout();
+      }, 3600000); // 1 hour
+    } else {
+      throw new Error('Invalid username or password');
     }
   };
 
@@ -63,10 +54,11 @@ export const AuthProvider = ({ children }) => {
     const { data, error } = await supabase
       .from('users')
       .select('name')
-      .filter('email', 'ilike', email);
+      .ilike('email', email)  // Use ilike for case-insensitive email check
+      .single();
 
     if (error) throw error;
-    return data[0];
+    return data;
   };
 
   const logout = () => {
