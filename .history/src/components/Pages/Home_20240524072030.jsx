@@ -42,13 +42,12 @@ const Home = () => {
         if (closedError) throw closedError;
         console.log('Closed Tenders:', closedTenders, closedTendersCount);
 
-        const { data, count: availableBidsCount, error: bidsError } = await supabase
-  .from('bids')
-  .select('*', { count: 'exact' });
+        const { count: availableBidsCount, error: bidsError } = await supabase
+          .from('bids')
+          .select('id', { count: 'exact' });
+        if (bidsError) throw bidsError;
+        console.log('Available Bids Count:', availableBidsCount);
 
-if (bidsError) throw bidsError;
-console.log('Available Bids Data:', data); // Log the entire data array
-console.log('Available Bids Count:', availableBidsCount);
         setTenderStats({
           availableTenders: availableTendersCount ?? 0,
           closedTenders: closedTendersCount ?? 0,

@@ -7,7 +7,7 @@ const Home = () => {
   const [user, setUser] = useState(null);
   const [tenderStats, setTenderStats] = useState({
     availableTenders: 0,
-    closedTenders: 0,
+    openedTenders: 0,
     availableBids: 0,
   });
 
@@ -27,36 +27,35 @@ const Home = () => {
       try {
         const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
         console.log('Today:', today); // Log the date to verify format
-
+    
         const { data: availableTenders, error: availableError, count: availableTendersCount } = await supabase
           .from('tenders')
           .select('id', { count: 'exact' })
           .gte('submission_deadline', today);
         if (availableError) throw availableError;
         console.log('Available Tenders:', availableTenders, availableTendersCount);
-
-        const { data: closedTenders, error: closedError, count: closedTendersCount } = await supabase
+    
+        const { data: openedTenders, error: openedError, count: openedTendersCount } = await supabase
           .from('tenders')
           .select('id', { count: 'exact' })
-          .lt('submission_deadline', today); // Check for submission_deadline earlier than today
-        if (closedError) throw closedError;
-        console.log('Closed Tenders:', closedTenders, closedTendersCount);
-
-        const { data, count: availableBidsCount, error: bidsError } = await supabase
-  .from('bids')
-  .select('*', { count: 'exact' });
-
-if (bidsError) throw bidsError;
-console.log('Available Bids Data:', data); // Log the entire data array
-console.log('Available Bids Count:', availableBidsCount);
+          .eq('submission_deadline', null); // Filter for opened tenders
+        if (openedError) throw openedError;
+        console.log('Opened Tenders:', openedTenders, openedTendersCount);
+    
+        const { data: availableBids, error: bidsError, count: availableBidsCount } = await supabase
+          .from('bids')
+          .select('id', { count: 'exact' });
+        if (bidsError) throw bidsError;
+        console.log('Available Bids:', availableBids, availableBidsCount);
+    
         setTenderStats({
           availableTenders: availableTendersCount ?? 0,
-          closedTenders: closedTendersCount ?? 0,
-          availableBids: availableBidsCount > 0 ? availableBidsCount : 0, // Check if the count is greater than 0 before assigning
+          openedTenders: openedTendersCount ?? 0,
+          availableBids: availableBidsCount ?? 0,
         });
         console.log('Tender Stats:', {
           availableTenders: availableTendersCount ?? 0,
-          closedTenders: closedTendersCount ?? 0,
+          openedTenders: openedTendersCount ?? 0,
           availableBids: availableBidsCount ?? 0,
         });
       } catch (error) {
@@ -97,10 +96,10 @@ console.log('Available Bids Count:', availableBidsCount);
           <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Closed Tenders
+                Opened Tenders
               </Typography>
               <Typography variant="h4">
-                {tenderStats.closedTenders}
+                {tenderStats.openedTenders}
               </Typography>
             </CardContent>
           </Card>
@@ -113,6 +112,18 @@ console.log('Available Bids Count:', availableBidsCount);
               </Typography>
               <Typography variant="h4">
                 {tenderStats.availableBids}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Tenders Available
+              </Typography>
+              <Typography variant="h4">
+                {tenderStats.availableTenders}
               </Typography>
             </CardContent>
           </Card>
