@@ -54,7 +54,7 @@ npm install
 npm run dev
 ```
 
-2. Open your web browser and visit `http://localhost:3000` to access the Tender Download System.
+2. Open your web browser and visit ` http://localhost:5173/` to access the Tender Download System.
 
 ## Scripts
 
@@ -64,13 +64,7 @@ npm run dev
 - `lint`: Lints the code for potential issues.
 - `preview`: Previews the built application.
 
-## Contributing
 
-Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request.
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgments
 
